@@ -3,20 +3,39 @@ options = {}
 options.file = 'config.txt'
 
 function options:init()
+	self.alwaysUsableElements = {}
+	self.elements = {}
+	self.currentScreen = 1
+
 	self.leftAlign = 75
 	self.optionWidth = 130
 	self.bottomMargin = 70
 	self.listWidth = 400
 	self.listOptionWidth = 130
-	self.elements = {}
+
+	self.tabsY = 170
+	self.tabSpacing = 25
+
+	self.minWidth = 800 -- any resolutions narrower than this are excluded
 end
 
-function options:add(obj)
-	table.insert(self.elements, obj)
+function options:add(obj, screen)
+	screen = screen or 1
+	if self.elements[screen] == nil then
+		self.elements[screen] = {}
+	end
+	table.insert(self.elements[screen], obj)
+	return obj
+end
+
+function options:alwaysUsableAdd(obj)
+	table.insert(self.alwaysUsableElements, obj)
 	return obj
 end
 
 function options:enter()
+	self.currentScreen = 1
+
 	local config = nil
 	if not love.filesystem.exists(self.file) then
 		config = self:getDefaultConfig()
@@ -24,71 +43,111 @@ function options:enter()
 		config = self:getConfig()
 	end
 
-	self.elements = {}
-	self.y = 225
-	self.dy = 45
+	self.tabs = {"GRAPHICS", "AUDIO", "CONTROLS", "ACCESSIBILITY"}
 
-	-- Takes all available resolutions
-	local resTable = love.window.getFullscreenModes(1)
-	local resolutions = {}
-	for k, res in pairs(resTable) do
-		if res.width > 800 then -- cuts off any resolutions with a width under 800
-			table.insert(resolutions, {res.width, res.height})
-		end
-	end
-
-	-- sort resolutions from smallest to biggest
-	table.sort(resolutions, function(a, b) return a[1]*a[2] < b[1]*b[2] end)
-
+	local resolutions = self:getResolutions()
 	local msaaOptions = {0, 2, 4, 8}
-	-- data table for creating the lists
-	-- the short name turns into the key for the list object that can be accessed through self
-	-- e.g. "resolution" creates: self.resolution (instance of List)
-	--  Title               Short name      Display     Options      Selected (current setting)
-	local lists = {
-		{"RESOLUTION", 		"resolution", 	'{1}x{2}', 	resolutions, {config.display.width, config.display.height}},
-		{"ANTIALIASING",	"msaa", 		'{}x', 		msaaOptions, config.display.flags.msaa},
-	}
 
-	for k, val in pairs(lists) do
-		local title, name, display, list, initial = val[1], val[2], val[3], val[4], val[5]
-
-		self[name] = self:add(List:new(title, list, initial, self.leftAlign, self.y, self.listWidth))
-		self[name]:setText(display)
-		self[name]:setOptionWidth(self.listOptionWidth)
-
-		self.y = self.y + self.dy
+	self.elements = {}
+	for i, tab in ipairs(self.tabs) do
+		self.elements[i] = {}
 	end
+	self.alwaysUsableElements = {}
+	-- data table for creating ui elements
+	-- the indexes correspond with the tabs
+	self.items = {
+		[1] = {
+			y = 250,
+			dy = 45,
 
-	self.y = 335
-	self.dy = 45
+			-- the short name turns into the key for the list object that can be accessed through self
+			-- e.g. "resolution" creates: self.resolution (instance of List)
+			--  Title               Short name      Display     Options      Selected (current setting)
+			lists = {
+				{"RESOLUTION", 		"resolution", 	'{1}x{2}', 	resolutions, {config.display.width, config.display.height}},
+				{"ANTIALIASING",	"msaa", 		'{}x', 		msaaOptions, config.display.flags.msaa},
+			},
 
-	-- data table for creating the checkboxes
-	-- the short name turns into the key for the checkbox object that can be accessed through self
-	-- e.g. "vsync" creates: self.vsync (instance of Checkbox)
-	--  Title               Short name      Selected (current setting)
-	local checkboxes = {
-		{"FULLSCREEN", 		"fullscreen", 	config.display.flags.fullscreen},
-		{"VERTICAL SYNC", 	"vsync", 		config.display.flags.vsync},
-		{"BORDERLESS", 		"borderless", 	config.display.flags.borderless},
+			-- the short name turns into the key for the checkbox object that can be accessed through self
+			-- e.g. "vsync" creates: self.vsync (instance of Checkbox)
+			--  Title               Short name      Selected (current setting)
+			checkboxes = {
+				{"FULLSCREEN", 		"fullscreen", 	config.display.flags.fullscreen},
+				{"VERTICAL SYNC", 	"vsync", 		config.display.flags.vsync},
+				{"BORDERLESS", 		"borderless", 	config.display.flags.borderless},
+			},
+		},
+
+		[2] = {
+			y = 250,
+			dy = 45,
+
+			-- the short name turns into the key for the list object that can be accessed through self
+			-- e.g. "resolution" creates: self.resolution (instance of List)
+			--  Title               Short name      Display     Options      Selected (current setting)
+			lists = {
+				{"TEST", 		"resolution", 	'{1}x{2}', 	resolutions, {config.display.width, config.display.height}},
+			},
+
+			-- the short name turns into the key for the checkbox object that can be accessed through self
+			-- e.g. "vsync" creates: self.vsync (instance of Checkbox)
+			--  Title               Short name      Selected (current setting)
+			checkboxes = {
+				{"FULLSCREEN", 		"fullscreen", 	config.display.flags.fullscreen},
+			},
+		},
 	}
 
-	for k, val in pairs(checkboxes) do
-		local title, name, flag = val[1], val[2], val[3]
 
-		self[name] = self:add(Checkbox:new(title, self.leftAlign, self.y))
-		self[name].selected = flag
+	-- Buttons to switch tabs
+	local prevWidth = 0
+	for i, tabName in ipairs(self.tabs) do
+		local b = self:alwaysUsableAdd(Button:new(tabName, self.leftAlign + self.tabSpacing * (i-1) + prevWidth, self.tabsY))
+		b.activated = function()
+			self.currentScreen = i
+		end
+		prevWidth = b.width + prevWidth
+	end
+	
+	for screen, screenItems in pairs(self.items) do
+		local y = screenItems.y
+		local dy = screenItems.dy
 
-		self.y = self.y + self.dy
+		-- Lists
+		if screenItems.lists and #screenItems.lists > 0 then
+			for k, val in pairs(screenItems.lists) do
+				local title, name, display, list, initial = val[1], val[2], val[3], val[4], val[5]
+
+				self[name] = self:add(List:new(title, list, initial, self.leftAlign, y, self.listWidth), screen)
+				self[name]:setText(display)
+				self[name]:setOptionWidth(self.listOptionWidth)
+
+				y = y + dy
+			end
+		end
+
+		y = y + 20
+
+		-- Checkboxes
+		if screenItems.checkboxes and #screenItems.checkboxes > 0 then
+			for k, val in pairs(screenItems.checkboxes) do
+				local title, name, flag = val[1], val[2], val[3]
+
+				self[name] = self:add(Checkbox:new(title, self.leftAlign, y), screen)
+				self[name].selected = flag
+
+				y = y + dy
+			end
+		end
 	end
 	
 	local y = love.graphics.getHeight() - self.bottomMargin
-	self.back = self:add(Button:new("< BACK", self.leftAlign, y))
+	self.back = self:alwaysUsableAdd(Button:new("< BACK", self.leftAlign, y))
 	self.back.activated = function()
 		state.switch(menu)
 	end
 
-	self.apply = self:add(Button:new('APPLY CHANGES', self.leftAlign+170, y))
+	self.apply = self:alwaysUsableAdd(Button:new('APPLY CHANGES', self.leftAlign+170, y))
 	self.apply.activated = function ()
 		self:applyChanges()
 		self.back.y = love.graphics.getHeight()-self.bottomMargin
@@ -102,13 +161,21 @@ function options:applyChanges()
 end
 
 function options:update(dt)
-	for i, element in ipairs(self.elements) do
+	for i, element in ipairs(self.elements[self.currentScreen]) do
+		element:update(dt)
+	end
+
+	for i, element in ipairs(self.alwaysUsableElements) do
 		element:update(dt)
 	end
 end
 
 function options:mousepressed(x, y, button)
-	for i, element in ipairs(self.elements) do
+	for i, element in ipairs(self.elements[self.currentScreen]) do
+		element:mousepressed(x, y, button)
+	end
+
+	for i, element in ipairs(self.alwaysUsableElements) do
 		element:mousepressed(x, y, button)
 	end
 end
@@ -117,6 +184,12 @@ function options:keypressed(key)
 	if key == "escape" then
 		state.switch(menu)
 	end
+	if key == "1" then
+		self.currentScreen = 1
+	end
+	if key == "2" then
+		self.currentScreen = 2
+	end
 end
 
 function options:draw()
@@ -124,7 +197,11 @@ function options:draw()
     love.graphics.setColor(255, 255, 255)
     love.graphics.print('OPTIONS', 75, 70)
 
-    for i, element in ipairs(self.elements) do
+    for i, element in ipairs(self.elements[self.currentScreen]) do
+		element:draw()
+	end
+
+	for i, element in ipairs(self.alwaysUsableElements) do
 		element:draw()
 	end
 end
@@ -184,4 +261,21 @@ end
 function options:getConfig()
 	assert(love.filesystem.exists(self.file), 'Tried to load config file, but it does not exist.')
 	return love.filesystem.load(self.file)()
+end
+
+function options:getResolutions()
+	-- Takes all available resolutions
+	local resTable = love.window.getFullscreenModes(1)
+	local resolutions = {}
+	for k, res in pairs(resTable) do
+		-- cuts off resolutions based on width
+		if res.width > self.minWidth then
+			table.insert(resolutions, {res.width, res.height})
+		end
+	end
+
+	-- sort resolutions from smallest to biggest
+	table.sort(resolutions, function(a, b) return a[1]*a[2] < b[1]*b[2] end)
+
+	return resolutions
 end
