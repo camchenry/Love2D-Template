@@ -1,23 +1,26 @@
 -- libraries
-class = require 'libs.middleclass'
-vector = require 'libs.vector'
-state = require 'libs.state'
-tween = require 'libs.tween'
-serialize = require 'libs.ser'
-signal = require 'libs.signal'
-require 'libs.util'
+class = require 'lib.middleclass'
+vector = require 'lib.vector'
+state = require 'lib.state'
+tween = require 'lib.tween'
+serialize = require 'lib.ser'
+signal = require 'lib.signal'
+require 'lib.util'
 
 -- gamestates
 require 'states.menu'
 require 'states.game'
 require 'states.options'
 
+-- entities
+require 'entities.sound'
+
 -- ui
-require 'libs.ui.button'
-require 'libs.ui.checkbox'
-require 'libs.ui.input'
-require 'libs.ui.list'
-require 'libs.ui.slider'
+require 'lib.ui.button'
+require 'lib.ui.checkbox'
+require 'lib.ui.input'
+require 'lib.ui.list'
+require 'lib.ui.slider'
 
 function love.load()
 	love.window.setTitle(config.windowTitle)
@@ -30,7 +33,10 @@ function love.load()
 
     math.randomseed(os.time()/10)
 
-    if not love.filesystem.exists("config.txt") then
+    -- Sound is instantiated before the game because it observes things beyond the game scope
+    soundManager = Sound:new()
+
+    if not love.filesystem.exists(options.file) then
         options:save(options:getDefaultConfig())
     end
 

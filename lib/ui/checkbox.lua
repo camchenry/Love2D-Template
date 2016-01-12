@@ -16,13 +16,19 @@ function Checkbox:initialize(text, x, y, w, h, fontSize, activated, deactivated)
 	self.textColor = {255, 255, 255}
 	
 	self.selected = false
+	self.alreadyHovering = false
 	
 	self.activated = activated or function() end
 	self.deactivated = deactivated or function() end
 end
 
 function Checkbox:update(dt)
-
+	if self:hover() and not self.alreadyHovering then
+        signal.emit('uiHover')
+        self.alreadyHovering = true
+    elseif not self:hover() then
+        self.alreadyHovering = false
+    end
 end
 
 function Checkbox:draw()

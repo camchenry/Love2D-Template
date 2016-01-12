@@ -14,7 +14,7 @@ function love.conf(t)
     t.window.fullscreen = false        -- Enable fullscreen (boolean)
     t.window.fullscreentype = "desktop" -- Standard fullscreen or desktop fullscreen mode (string)
     t.window.vsync = true              -- Enable vertical sync (boolean)
-    t.window.fsaa = 4                  -- The number of samples to use with multi-sampled antialiasing (number)
+    t.window.msaa = 4                  -- The number of samples to use with multi-sampled antialiasing (number)
     t.window.display = 1               -- Index of the monitor to show the window in (number)
 
     t.modules.audio = true             -- Enable the audio module (boolean)
@@ -35,17 +35,17 @@ end
 config = {
     debug = true,
 
-    gameTitle = "< Set game title in conf.lua >",
+    gameTitle = "Untitled",
     windowTitle = "Untitled",
-    windowIcon = 'img/icon.png',
+    windowIcon = 'assets/img/icon.png',
 
     -- see: http://love2d.org/wiki/love.graphics.setDefaultFilter
     filterModeMin = "nearest",
     filterModeMax = "nearest",
 
-    font = 'fonts/OpenSans-Regular.ttf',
-    fontBold = 'fonts/OpenSans-Bold.ttf',
-    fontLight = 'fonts/OpenSans-Light.ttf',
+    font = 'assets/font/OpenSans-Regular.ttf',
+    fontBold = 'assets/font/OpenSans-Bold.ttf',
+    fontLight = 'assets/font/OpenSans-Light.ttf',
 }
 
 font = setmetatable({}, {

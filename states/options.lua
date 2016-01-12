@@ -13,8 +13,8 @@ function options:init()
 	self.listWidth = 400
 	self.listOptionWidth = 130
 
-	self.tabsY = 170
-	self.tabSpacing = 25
+	self.tabsY = 160
+	self.tabSpacing = 35
 
 	self.minWidth = 800 -- any resolutions narrower than this are excluded
 end
@@ -107,6 +107,9 @@ function options:enter()
 			local title, name, min, max, value = args[2], args[3], args[4], args[5], args[6]
 
 			self[name] = self:add(Slider:new(title, min, max, value, self.leftAlign, y, 400), panel)
+			self[name].changed = function()
+				signal.emit(name .. 'Changed', self[name].value)
+			end
 		end,
 	}
 	
@@ -124,7 +127,7 @@ function options:enter()
 	-- Buttons to switch tabs
 	local prevWidth = 0
 	for i, tabName in ipairs(self.tabs) do
-		local b = self:alwaysUsableAdd(Button:new(tabName, self.leftAlign + self.tabSpacing * (i-1) + prevWidth, self.tabsY))
+		local b = self:alwaysUsableAdd(Button:new(tabName, self.leftAlign + self.tabSpacing * (i-1) + prevWidth, self.tabsY, nil, nil, fontLight[24]))
 		b.activated = function()
 			self.currentPanel = i
 		end
@@ -173,12 +176,6 @@ end
 function options:keypressed(key)
 	if key == "escape" then
 		state.switch(menu)
-	end
-	if key == "1" then
-		self.currentPanel = 1
-	end
-	if key == "2" then
-		self.currentPanel = 2
 	end
 end
 
@@ -250,8 +247,6 @@ function options:load()
 	local config = self:getConfig()
 	
 	love.window.setMode(config.display.width, config.display.height, config.display.flags)
-
-	-- set sound volume
 
 	return true
 end
