@@ -22,6 +22,7 @@ function List:initialize(label, options, initial, x, y, w, h)
 	self.width = w 
 	self.height = h or self.font:getHeight()
 	self.optionWidth = 120
+	self.y = self.y - self.height/2
 	
 	self.leftButton = Button:new("<", self.x, self.y, nil, nil, fontBold[22])
 	self.leftButton.activated = function()

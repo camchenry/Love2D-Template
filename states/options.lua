@@ -5,7 +5,7 @@ options.file = 'config.txt'
 function options:init()
 	self.alwaysUsableElements = {}
 	self.elements = {}
-	self.currentScreen = 1
+	self.currentPanel = 1
 
 	self.leftAlign = 75
 	self.optionWidth = 130
@@ -19,12 +19,12 @@ function options:init()
 	self.minWidth = 800 -- any resolutions narrower than this are excluded
 end
 
-function options:add(obj, screen)
-	screen = screen or 1
-	if self.elements[screen] == nil then
-		self.elements[screen] = {}
+function options:add(obj, panel)
+	panel = panel or 1
+	if self.elements[panel] == nil then
+		self.elements[panel] = {}
 	end
-	table.insert(self.elements[screen], obj)
+	table.insert(self.elements[panel], obj)
 	return obj
 end
 
@@ -34,7 +34,7 @@ function options:alwaysUsableAdd(obj)
 end
 
 function options:enter()
-	self.currentScreen = 1
+	self.currentPanel = 1
 
 	local config = nil
 	if not love.filesystem.exists(self.file) then
@@ -56,89 +56,79 @@ function options:enter()
 	-- data table for creating ui elements
 	-- the indexes correspond with the tabs
 	self.items = {
-		[1] = {
+		{
 			y = 250,
 			dy = 45,
 
 			-- the short name turns into the key for the list object that can be accessed through self
-			-- e.g. "resolution" creates: self.resolution (instance of List)
-			--  Title               Short name      Display     Options      Selected (current setting)
-			lists = {
-				{"RESOLUTION", 		"resolution", 	'{1}x{2}', 	resolutions, {config.display.width, config.display.height}},
-				{"ANTIALIASING",	"msaa", 		'{}x', 		msaaOptions, config.display.flags.msaa},
-			},
-
-			-- the short name turns into the key for the checkbox object that can be accessed through self
-			-- e.g. "vsync" creates: self.vsync (instance of Checkbox)
-			--  Title               Short name      Selected (current setting)
-			checkboxes = {
-				{"FULLSCREEN", 		"fullscreen", 	config.display.flags.fullscreen},
-				{"VERTICAL SYNC", 	"vsync", 		config.display.flags.vsync},
-				{"BORDERLESS", 		"borderless", 	config.display.flags.borderless},
+			-- e.g. "resolution" creates: self.resolution (instance of the object)
+			outline = {
+				{List, 		"RESOLUTION", 		"resolution", 	'{1}x{2}', 	resolutions, {config.display.width, config.display.height}},
+				{List, 		"ANTIALIASING",		"msaa", 		'{}x', 		msaaOptions, config.display.flags.msaa},
+				{Checkbox, 	"FULLSCREEN", 		"fullscreen", 	config.display.flags.fullscreen},
+				{Checkbox, 	"VERTICAL SYNC", 	"vsync", 		config.display.flags.vsync},
+				{Checkbox, 	"BORDERLESS", 		"borderless", 	config.display.flags.borderless},
 			},
 		},
 
-		[2] = {
+		{
 			y = 250,
 			dy = 45,
 
-			-- the short name turns into the key for the list object that can be accessed through self
-			-- e.g. "resolution" creates: self.resolution (instance of List)
-			--  Title               Short name      Display     Options      Selected (current setting)
-			lists = {
-				{"TEST", 		"resolution", 	'{1}x{2}', 	resolutions, {config.display.width, config.display.height}},
-			},
-
-			-- the short name turns into the key for the checkbox object that can be accessed through self
-			-- e.g. "vsync" creates: self.vsync (instance of Checkbox)
-			--  Title               Short name      Selected (current setting)
-			checkboxes = {
-				{"FULLSCREEN", 		"fullscreen", 	config.display.flags.fullscreen},
+			outline = {
+				{Slider, 	"SOUND VOLUME", 	"soundVolume", 0, 100, config.audio.soundVolume},
 			},
 		},
 	}
 
+	-- how to handle adding a ui element to an options panel
+	self.handling = {
+		-- panel: index of the current panel
+		-- y: y value of the ui element
+		-- args: a table of all the data needed to make the ui element
+		-- args[1] = the class (List, Checkbox, ...)
+
+		[List] = function(panel, y, args)
+			local title, name, display, list, initial = args[2], args[3], args[4], args[5], args[6]
+
+			self[name] = self:add(List:new(title, list, initial, self.leftAlign, y, self.listWidth), panel)
+			self[name]:setText(display)
+			self[name]:setOptionWidth(self.listOptionWidth)
+		end,
+
+		[Checkbox] = function(panel, y, args)
+			local title, name, flag = args[2], args[3], args[4]
+
+			self[name] = self:add(Checkbox:new(title, self.leftAlign, y), panel)
+			self[name].selected = flag
+		end,
+
+		[Slider] = function(panel, y, args)
+			local title, name, min, max, value = args[2], args[3], args[4], args[5], args[6]
+
+			self[name] = self:add(Slider:new(title, min, max, value, self.leftAlign, y, 400), panel)
+		end,
+	}
+	
+	for panel, panelItems in ipairs(self.items) do
+		local y = panelItems.y
+		local dy = panelItems.dy
+
+		for i, args in ipairs(panelItems.outline) do
+			self.handling[args[1]](panel, y, args)
+
+			y = y + dy
+		end
+	end
 
 	-- Buttons to switch tabs
 	local prevWidth = 0
 	for i, tabName in ipairs(self.tabs) do
 		local b = self:alwaysUsableAdd(Button:new(tabName, self.leftAlign + self.tabSpacing * (i-1) + prevWidth, self.tabsY))
 		b.activated = function()
-			self.currentScreen = i
+			self.currentPanel = i
 		end
 		prevWidth = b.width + prevWidth
-	end
-	
-	for screen, screenItems in pairs(self.items) do
-		local y = screenItems.y
-		local dy = screenItems.dy
-
-		-- Lists
-		if screenItems.lists and #screenItems.lists > 0 then
-			for k, val in pairs(screenItems.lists) do
-				local title, name, display, list, initial = val[1], val[2], val[3], val[4], val[5]
-
-				self[name] = self:add(List:new(title, list, initial, self.leftAlign, y, self.listWidth), screen)
-				self[name]:setText(display)
-				self[name]:setOptionWidth(self.listOptionWidth)
-
-				y = y + dy
-			end
-		end
-
-		y = y + 20
-
-		-- Checkboxes
-		if screenItems.checkboxes and #screenItems.checkboxes > 0 then
-			for k, val in pairs(screenItems.checkboxes) do
-				local title, name, flag = val[1], val[2], val[3]
-
-				self[name] = self:add(Checkbox:new(title, self.leftAlign, y), screen)
-				self[name].selected = flag
-
-				y = y + dy
-			end
-		end
 	end
 	
 	local y = love.graphics.getHeight() - self.bottomMargin
@@ -150,8 +140,8 @@ function options:enter()
 	self.apply = self:alwaysUsableAdd(Button:new('APPLY CHANGES', self.leftAlign+170, y))
 	self.apply.activated = function ()
 		self:applyChanges()
-		self.back.y = love.graphics.getHeight()-self.bottomMargin
-		self.apply.y = love.graphics.getHeight()-self.bottomMargin
+		self.back.y = y
+		self.apply.y = y
 	end
 end
 
@@ -161,7 +151,7 @@ function options:applyChanges()
 end
 
 function options:update(dt)
-	for i, element in ipairs(self.elements[self.currentScreen]) do
+	for i, element in ipairs(self.elements[self.currentPanel]) do
 		element:update(dt)
 	end
 
@@ -171,7 +161,7 @@ function options:update(dt)
 end
 
 function options:mousepressed(x, y, button)
-	for i, element in ipairs(self.elements[self.currentScreen]) do
+	for i, element in ipairs(self.elements[self.currentPanel]) do
 		element:mousepressed(x, y, button)
 	end
 
@@ -185,10 +175,10 @@ function options:keypressed(key)
 		state.switch(menu)
 	end
 	if key == "1" then
-		self.currentScreen = 1
+		self.currentPanel = 1
 	end
 	if key == "2" then
-		self.currentScreen = 2
+		self.currentPanel = 2
 	end
 end
 
@@ -197,7 +187,7 @@ function options:draw()
     love.graphics.setColor(255, 255, 255)
     love.graphics.print('OPTIONS', 75, 70)
 
-    for i, element in ipairs(self.elements[self.currentScreen]) do
+    for i, element in ipairs(self.elements[self.currentPanel]) do
 		element:draw()
 	end
 
@@ -219,6 +209,9 @@ function options:getDefaultConfig()
 				borderless = false,
 				msaa = 0,
 			},
+		},
+		audio = {
+			soundVolume = 100,
 		},
 		graphics = {
 
@@ -242,6 +235,9 @@ function options:save(conf)
 					msaa = self.msaa.options[self.msaa.selected],
 				},
 			},
+			audio = {
+				soundVolume = self.soundVolume.value
+			},
 			graphics = {
 
 			},
@@ -254,6 +250,8 @@ function options:load()
 	local config = self:getConfig()
 	
 	love.window.setMode(config.display.width, config.display.height, config.display.flags)
+
+	-- set sound volume
 
 	return true
 end

@@ -17,6 +17,7 @@ require 'libs.ui.button'
 require 'libs.ui.checkbox'
 require 'libs.ui.input'
 require 'libs.ui.list'
+require 'libs.ui.slider'
 
 function love.load()
 	love.window.setTitle(config.windowTitle)
