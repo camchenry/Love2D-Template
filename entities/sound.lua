@@ -29,7 +29,6 @@ function Sound:initialize(directory)
 			self.sounds[name]:setVolume(self.soundVolume)
 		end
 	end
-	assert(self.sounds['uiClick'] ~= nil)
 
     signal.register('uiClick', function() self:onUiClick() end)
     signal.register('uiHover', function() self:onUiHover() end)

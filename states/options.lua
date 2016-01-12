@@ -143,9 +143,13 @@ function options:enter()
 	self.apply = self:alwaysUsableAdd(Button:new('APPLY CHANGES', self.leftAlign+170, y))
 	self.apply.activated = function ()
 		self:applyChanges()
+	end
+
+	signal.register('resolutionChanged', function()
+		y = love.graphics.getHeight() - self.bottomMargin
 		self.back.y = y
 		self.apply.y = y
-	end
+	end)
 end
 
 function options:applyChanges()
@@ -247,6 +251,7 @@ function options:load()
 	local config = self:getConfig()
 	
 	love.window.setMode(config.display.width, config.display.height, config.display.flags)
+	signal.emit('resolutionChanged')
 
 	return true
 end
