@@ -1,6 +1,7 @@
 options = {}
 -- this is out here because it needs to be accessible before options:init() is called
 options.file = 'config.txt'
+options.version = 1
 
 function options:init()
 	self.alwaysUsableElements = {}
@@ -249,6 +250,32 @@ end
 
 function options:load()
 	local config = self:getConfig()
+
+	-- old config file
+	-- this could be  rewritten to be more clear
+	if (config.version == nil) or (self.version > config.version) then
+		local newConfig = self:getDefaultConfig()
+
+		-- this will port over old config values to a new config file, based on the default
+		-- if there are missing values, it replaces them with the default setting
+		for i, category in pairs(newConfig) do
+			if type(category) == 'table' then
+				for j, value in pairs(category) do
+					if config[i][j] == nil then
+						config[i][j] = value
+
+					-- table within a table (right now this should only be the window flags)
+					elseif type(value) == 'table' then
+						for k, flag in pairs(value) do
+							if config[i][j][k] == nil then
+								config[i][j][k] = flag
+							end
+						end
+					end
+				end
+			end
+		end
+	end
 	
 	love.window.setMode(config.display.width, config.display.height, config.display.flags)
 	signal.emit('resolutionChanged')
