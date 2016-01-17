@@ -7,14 +7,12 @@ menu.items = {
             state.switch(game)
         end,
     },
-
     {
         title = "OPTIONS",
         action = function()
             state.switch(options)
         end,
     },
-
     {
         title = "QUIT",
         action = function()
@@ -54,7 +52,7 @@ end
 function menu:draw()
     love.graphics.setFont(fontBold[72])
     love.graphics.setColor(255, 255, 255)
-    love.graphics.print(config.gameTitle, 75, 70)
+    love.graphics.print("Untitled", 75, 70)
 
     for i, button in pairs(self.buttons) do
         button:draw()

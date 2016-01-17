@@ -23,10 +23,37 @@ require 'lib.ui.list'
 require 'lib.ui.slider'
 
 function love.load()
-	love.window.setTitle(config.windowTitle)
-    love.window.setIcon(love.image.newImageData(config.windowIcon))
-	love.graphics.setDefaultFilter(config.filterModeMin, config.filterModeMax)
-    love.graphics.setFont(font[16])
+    _font = 'assets/font/OpenSans-Regular.ttf'
+    _fontBold = 'assets/font/OpenSans-Bold.ttf'
+    _fontLight = 'assets/font/OpenSans-Light.ttf'
+
+    font = setmetatable({}, {
+        __index = function(t,k)
+            local f = love.graphics.newFont(_font, k)
+            rawset(t, k, f)
+            return f
+        end 
+    })
+
+    fontBold = setmetatable({}, {
+        __index = function(t,k)
+            local f = love.graphics.newFont(_fontBold, k)
+            rawset(t, k, f)
+            return f
+        end
+    })
+
+    fontLight = setmetatable({}, {
+        __index = function(t,k)
+            local f = love.graphics.newFont(_fontLight, k)
+            rawset(t, k, f)
+            return f
+        end 
+    })
+
+    love.window.setIcon(love.image.newImageData('assets/img/icon.png'))
+	love.graphics.setDefaultFilter("nearest", "nearest")
+    love.graphics.setFont(font[14])
 
     state.registerEvents()
     state.switch(menu)
@@ -62,7 +89,7 @@ function love.resize(w, h)
 end
 
 function love.update(dt)
-    tween.update(dt)
+    
 end
 
 function love.draw()

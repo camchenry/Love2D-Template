@@ -11,7 +11,7 @@ function game:update(dt)
 
 end
 
-function game:keypressed(key, isrepeat)
+function game:keypressed(key, code)
 
 end
 

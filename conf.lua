@@ -1,12 +1,12 @@
 function love.conf(t)
     t.identity = nil                   -- The name of the save directory (string)
-    t.version = "0.10.0"                -- The LÖVE version this game was made for (string)
+    t.version = "0.10.0"               -- The LÖVE version this game was made for (string)
     t.console = false                  -- Attach a console (boolean, Windows only)
 
     t.window.title = "Untitled"        -- The window title (string)
     t.window.icon = nil                -- Filepath to an image to use as the window's icon (string)
-    t.window.width = 1024              -- The window width (number)
-    t.window.height = 768              -- The window height (number)
+    t.window.width = 1280              -- The window width (number)
+    t.window.height = 720              -- The window height (number)
     t.window.borderless = false        -- Remove all border visuals from the window (boolean)
     t.window.resizable = false         -- Let the window be user-resizable (boolean)
     t.window.minwidth = 1              -- Minimum window width if the window is resizable (number)
@@ -14,7 +14,7 @@ function love.conf(t)
     t.window.fullscreen = false        -- Enable fullscreen (boolean)
     t.window.fullscreentype = "desktop" -- Standard fullscreen or desktop fullscreen mode (string)
     t.window.vsync = true              -- Enable vertical sync (boolean)
-    t.window.msaa = 4                  -- The number of samples to use with multi-sampled antialiasing (number)
+    t.window.msaa = 0                  -- The number of samples to use with multi-sampled antialiasing (number)
     t.window.display = 1               -- Index of the monitor to show the window in (number)
 
     t.modules.audio = true             -- Enable the audio module (boolean)
@@ -31,43 +31,3 @@ function love.conf(t)
     t.modules.timer = true             -- Enable the timer module (boolean)
     t.modules.window = true            -- Enable the window module (boolean)
 end
-
-config = {
-    debug = true,
-
-    gameTitle = "Untitled",
-    windowTitle = "Untitled",
-    windowIcon = 'assets/img/icon.png',
-
-    -- see: http://love2d.org/wiki/love.graphics.setDefaultFilter
-    filterModeMin = "nearest",
-    filterModeMax = "nearest",
-
-    font = 'assets/font/OpenSans-Regular.ttf',
-    fontBold = 'assets/font/OpenSans-Bold.ttf',
-    fontLight = 'assets/font/OpenSans-Light.ttf',
-}
-
-font = setmetatable({}, {
-    __index = function(t,k)
-        local f = love.graphics.newFont(config.font, k)
-        rawset(t, k, f)
-        return f
-    end 
-})
-
-fontBold = setmetatable({}, {
-    __index = function(t,k)
-        local f = love.graphics.newFont(config.fontBold, k)
-        rawset(t, k, f)
-        return f
-    end
-})
-
-fontLight = setmetatable({}, {
-    __index = function(t,k)
-        local f = love.graphics.newFont(config.fontLight, k)
-        rawset(t, k, f)
-        return f
-    end 
-})
