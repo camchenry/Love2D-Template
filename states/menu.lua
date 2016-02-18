@@ -2,7 +2,7 @@ menu = {}
 
 menu.items = {
     {
-        title = "PLAY GAME",
+        title = "PLAY",
         action = function()
             state.switch(game)
         end,

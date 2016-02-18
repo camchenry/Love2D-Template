@@ -17,7 +17,7 @@ function options:init()
 	self.tabsY = 160
 	self.tabSpacing = 35
 
-	self.minWidth = 800 -- any resolutions narrower than this are excluded
+	self.minWidth = 1279 -- any resolutions narrower than this are excluded
 end
 
 function options:add(obj, panel)
