@@ -81,7 +81,7 @@ function love.draw()
 end
 
 function love.keyreleased(key, code, isRepeat)
-    if key == "escape" and love.keyboard.isDown("lctrl", "rctrl")then
+    if key == "escape" and love.keyboard.isDown("lctrl", "rctrl") then
         love.event.quit()
     end
 
