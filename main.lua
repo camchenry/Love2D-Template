@@ -1,7 +1,7 @@
 require 'globals'
 
-lume    = require 'libs.lume'
-husl    = require 'libs.husl'
+Lume    = require 'libs.lume'
+Husl    = require 'libs.husl'
 Class   = require 'libs.middleclass'
 Vector  = require 'libs.vector'
 State   = require 'libs.state'
@@ -59,20 +59,17 @@ function love.draw()
     if DEBUG then
         love.graphics.push()
         love.graphics.setFont(Fonts.mono[14])
+        love.graphics.setColor(255, 255, 255, 255)
         local stats = love.graphics.getStats()
         local info = {
             "FPS: " .. love.timer.getFPS(),
-            "RAM: " .. lume.round(collectgarbage("count")/1024, .1) .. "MB",
+            "RAM: " .. Lume.round(collectgarbage("count")/1024, .1) .. "MB",
+            "DRW: " .. stats.drawcalls,
+            "TEX: " .. Lume.round(stats.texturememory / 1024 / 1024, .01) .. "MB",
+            "IMG#: " .. stats.images,
+            "FONT#: " .. stats.fonts,
+            "CANVAS#: " .. stats.canvases,
         }
-        if DETAILED_DEBUG then
-            lume.push(info,
-                "DRW: " .. stats.drawcalls,
-                "TEX: " .. lume.round(stats.texturememory / 1024 / 1024, .01) .. "MB",
-                "IMG#: " .. stats.images,
-                "FNT#: " .. stats.fonts,
-                "CVS#: " .. stats.canvases
-            )
-        end
         for i, text in ipairs(info) do
             love.graphics.print(text, 5, 2 + (i-1)*15)
         end
@@ -81,16 +78,12 @@ function love.draw()
 end
 
 function love.keyreleased(key, code, isRepeat)
-    if key == "escape" and love.keyboard.isDown("lctrl", "rctrl") then
+    if key == "escape" then
         love.event.quit()
     end
 
-    if key == "`" then
-        if love.keyboard.isDown("lshift", "rshift") then
-            DETAILED_DEBUG = not DETAILED_DEBUG
-        else
-            DEBUG = not DEBUG
-        end
+    if not RELEASE and key == "`" then
+        DEBUG = not DEBUG
     end
 end
 
