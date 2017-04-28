@@ -54,7 +54,7 @@ end
 
 function love.update(dt)
     if DEBUG and Lovebird then
-        Lovebird.update(dt)
+        Lovebird.update()
     end
 end
 
