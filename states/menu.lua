@@ -1,16 +1,13 @@
-menu = {}
+local menu = {}
 
 function menu:init()
     self.titleText = "LÖVE Game"
     self.titleFont = Fonts.bold[60]
-    self.titleColor = {233, 73, 154}
+    self.titleColor = {255, 255, 255}
 
-    self.startKey = "space"
-    self.startText = "Press " .. string.upper(self.startKey) .. " to start"
+    self.startText = "Press any key or touch to start"
     self.startFont = Fonts.regular[24]
     self.startColor = {255, 255, 255}
-
-    love.graphics.setBackgroundColor(37, 170, 225)
 end
 
 function menu:enter()
@@ -22,9 +19,11 @@ function menu:update(dt)
 end
 
 function menu:keyreleased(key, code)
-    if key == self.startKey then
-        State.switch(game)
-    end
+    State.switch(States.game)
+end
+
+function menu:touchreleased(id, x, y, dx, dy, pressure)
+    State.switch(States.game)
 end
 
 function menu:mousepressed(x, y, mbutton)
@@ -44,3 +43,5 @@ function menu:draw()
     love.graphics.setColor(r, g, b, 255 * math.abs(math.sin(love.timer.getTime()*2)))
     love.graphics.printf(self.startText, 0, love.graphics.getHeight()/2 - self.startFont:getHeight(self.startText)/2, love.graphics.getWidth(), "center")
 end
+
+return menu
