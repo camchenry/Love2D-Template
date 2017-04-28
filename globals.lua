@@ -82,12 +82,10 @@ Fonts = {
     regular         = makeFont 'assets/fonts/Roboto-Regular.ttf',
     bold            = makeFont 'assets/fonts/Roboto-Bold.ttf',
     light           = makeFont 'assets/fonts/Roboto-Light.ttf',
-    medium          = makeFont 'assets/fonts/Roboto-Medium.ttf',
     thin            = makeFont 'assets/fonts/Roboto-Thin.ttf',
     regularItalic   = makeFont 'assets/fonts/Roboto-Italic.ttf',
     boldItalic      = makeFont 'assets/fonts/Roboto-BoldItalic.ttf',
     lightItalic     = makeFont 'assets/fonts/Roboto-LightItalic.ttf',
-    mediumItalic    = makeFont 'assets/fonts/Roboto-MediumItalic.ttf',
     thinItalic      = makeFont 'assets/fonts/Roboto-Italic.ttf',
 
     monospace       = makeFont 'assets/fonts/RobotoMono-Regular.ttf',
