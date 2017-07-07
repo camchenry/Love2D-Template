@@ -94,3 +94,31 @@ Fonts.default = Fonts.regular
 
 CONFIG.debug.stats.font = Fonts.monospace
 CONFIG.debug.error.font = Fonts.monospace
+
+Lume    = require 'libs.lume'
+Husl    = require 'libs.husl'
+Class   = require 'libs.class'
+Vector  = require 'libs.vector'
+State   = require 'libs.state'
+Signal  = require 'libs.signal'
+Inspect = require 'libs.inspect'
+Camera  = require 'libs.camera'
+Timer   = require 'libs.timer'
+
+States = {
+    menu = require 'states.menu',
+    game = require 'states.game',
+}
+
+if DEBUG then
+    Lovebird = require 'libs.lovebird'
+    Lovebird.port = CONFIG.debug.lovebird.port
+    Lovebird.wrapprint = CONFIG.debug.lovebird.wrapPrint
+    Lovebird.echoinput = CONFIG.debug.lovebird.echoInput
+    Lovebird.updateinterval = CONFIG.debug.lovebird.updateInterval
+    Lovebird.maxlines = CONFIG.debug.lovebird.maxLines
+    print('Running lovebird on localhost:' .. Lovebird.port)
+    if CONFIG.debug.lovebird.openInBrowser then
+        love.system.openURL("http://localhost:" .. Lovebird.port)
+    end
+end
