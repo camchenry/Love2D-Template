@@ -37,7 +37,7 @@ function menu:draw()
     love.graphics.setColor(self.titleColor)
     love.graphics.printf(self.titleText, 0, 100, love.graphics.getWidth(), "center")
     love.graphics.setFont(self.startFont)
-    
+
     -- Start text fades in and out
     local r, g, b = self.startColor[1], self.startColor[2], self.startColor[3]
     love.graphics.setColor(r, g, b, 255 * math.abs(math.sin(love.timer.getTime()*2)))

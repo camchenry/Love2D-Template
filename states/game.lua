@@ -5,7 +5,7 @@ function game:init()
 end
 
 function game:enter()
-    
+
 end
 
 function game:update(dt)
