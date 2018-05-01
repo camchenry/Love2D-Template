@@ -217,16 +217,20 @@ function love.errorhandler(msg)
         p = p .. "\n\nPress Ctrl+C or tap to copy this error"
     end
 
+    local is_clicked = false
+
     return function()
         love.event.pump()
 
-        for e, a, b, c in love.event.poll() do
+        for e, a, b, c, d in love.event.poll() do
             if e == "quit" then
                 return 1
             elseif e == "keypressed" and a == "escape" then
                 return 1
             elseif e == "keypressed" and a == "c" and love.keyboard.isDown("lctrl", "rctrl") then
                 copyToClipboard()
+            elseif e == "mousepressed" and c == 1 then
+                is_clicked = not is_clicked
             elseif e == "touchpressed" then
                 local name = love.window.getTitle()
                 if #name == 0 or name == "Untitled" then name = "Game" end
@@ -240,6 +244,8 @@ function love.errorhandler(msg)
                 elseif pressed == 3 then
                     copyToClipboard()
                 end
+            elseif e == "mousemoved" and is_clicked then
+                translate_ay = d * 100 * math.sqrt((1+ math.abs(translate_vy)))
             elseif e == "wheelmoved" then
                 translate_ay = b * 2000 * math.sqrt((1+ math.abs(translate_vy)))
             end
