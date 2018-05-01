@@ -36,8 +36,8 @@ CONFIG = {
             font            = nil, -- set after fonts are created
             fontSize        = 16,
             lineHeight      = 18,
-            foreground      = {255, 255, 255, 225},
-            shadow          = {0, 0, 0, 225},
+            foreground      = {1, 1, 1, 1},
+            shadow          = {0, 0, 0, 1},
             shadowOffset    = {x = 1, y = 1},
             position        = {x = 8, y = 6},
 
@@ -48,9 +48,9 @@ CONFIG = {
         error = {
             font            = nil, -- set after fonts are created
             fontSize        = 16,
-            background      = {26, 79, 126},
-            foreground      = {255, 255, 255},
-            shadow          = {0, 0, 0, 225},
+            background      = {.1, .31, .5},
+            foreground      = {1, 1, 1},
+            shadow          = {0, 0, 0, .88},
             shadowOffset    = {x = 1, y = 1},
             position        = {x = 70, y = 70},
         },
