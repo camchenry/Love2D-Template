@@ -228,7 +228,9 @@ function love.errorhandler(msg)
             elseif e == "keypressed" and a == "c" and love.keyboard.isDown("lctrl", "rctrl") then
                 copyToClipboard()
             elseif e == "mousepressed" and c == 1 then
-                is_clicked = not is_clicked
+                is_clicked = true
+            elseif e == "mousereleased" and c == 1 then
+                is_clicked = false
             elseif e == "touchpressed" then
                 local name = love.window.getTitle()
                 if #name == 0 or name == "Untitled" then name = "Game" end
