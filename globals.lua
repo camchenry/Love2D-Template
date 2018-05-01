@@ -97,6 +97,5 @@ Camera  = require 'libs.camera'
 Timer   = require 'libs.timer'
 
 States = {
-    menu = require 'states.menu',
     game = require 'states.game',
 }

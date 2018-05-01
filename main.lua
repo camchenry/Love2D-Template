@@ -15,7 +15,7 @@ function love.load()
     end
 
     State.registerEvents(callbacks)
-    State.switch(States.menu)
+    State.switch(States.game)
 
     if DEBUG then
         local loadTimeEnd = love.timer.getTime()
