@@ -185,7 +185,6 @@ function love.errorhandler(msg)
             love.graphics.translate(0, -translate_y)
             local bar_width = 8
             local bar_height = love.graphics.getHeight()^2 / max_translate_y
-            print(bar_height)
             local bar_y = -translate_y / max_translate_y * love.graphics.getHeight()
             love.graphics.setColor(1, 1, 1, 0.5)
             love.graphics.rectangle('fill', love.graphics.getWidth() - bar_width - 1, bar_y, bar_width, bar_height, 2, 2)
@@ -195,7 +194,6 @@ function love.errorhandler(msg)
             love.graphics.translate(0, -translate_y)
             local bar_width = 8
             local bar_height = love.graphics.getHeight()^2 / max_translate_y
-            print(bar_height)
             local bar_y = -translate_y / max_translate_y * love.graphics.getHeight()
             love.graphics.setColor(1, 1, 1, Lume.clamp(math.abs(translate_vy)/4, 0, 0.5))
             love.graphics.rectangle('fill', love.graphics.getWidth() - bar_width - 1, bar_y, bar_width, bar_height, 2, 2)
