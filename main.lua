@@ -9,7 +9,7 @@ function love.load()
                                    CONFIG.graphics.filter.anisotropy)
 
     -- Draw is left out so we can override it ourselves
-    local callbacks = {'errhand', 'update'}
+    local callbacks = {'update'}
     for k in pairs(love.handlers) do
         callbacks[#callbacks+1] = k
     end
@@ -88,13 +88,13 @@ end
 -- Error screen.
 -----------------------------------------------------------
 
-local debug, print = debug, print
+local utf8 = require("utf8")
 
 local function error_printer(msg, layer)
     print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
 end
 
-function love.errhand(msg)
+function love.errorhandler(msg)
     msg = tostring(msg)
 
     error_printer(msg, 2)
@@ -115,7 +115,7 @@ function love.errhand(msg)
         love.mouse.setVisible(true)
         love.mouse.setGrabbed(false)
         love.mouse.setRelativeMode(false)
-        if love.mouse.hasCursor() then
+        if love.mouse.isCursorSupported() then
             love.mouse.setCursor()
         end
     end
@@ -126,55 +126,85 @@ function love.errhand(msg)
         end
     end
     if love.audio then love.audio.stop() end
+
     love.graphics.reset()
     local size = math.floor(love.window.toPixels(CONFIG.debug.error.fontSize))
-    love.graphics.setFont(CONFIG.debug.error.font[size])
+    local font = CONFIG.debug.error.font[size]
+    love.graphics.setFont(font)
 
-    love.graphics.setBackgroundColor(CONFIG.debug.error.background)
     love.graphics.setColor(CONFIG.debug.error.foreground)
 
     local trace = debug.traceback()
 
-    love.graphics.clear(love.graphics.getBackgroundColor())
     love.graphics.origin()
+
+    local sanitizedmsg = {}
+    for char in msg:gmatch(utf8.charpattern) do
+        table.insert(sanitizedmsg, char)
+    end
+    sanitizedmsg = table.concat(sanitizedmsg)
 
     local err = {}
 
-    table.insert(err, "Error")
-    table.insert(err, "-------\n")
-    table.insert(err, msg.."\n\n")
+    table.insert(err, "Error\n")
+    table.insert(err, sanitizedmsg)
 
-    local i = 0
-    for l in string.gmatch(trace, "(.-)\n") do
-        if not string.match(l, "boot.lua") then
-            local firstLine = string.match(l, "stack traceback:")
-            l = string.gsub(l, "stack traceback:", "Traceback")
+    if #sanitizedmsg ~= #msg then
+        table.insert(err, "Invalid UTF-8 string in error message.")
+    end
 
-            if not firstLine then
-                l = ">  " .. l
-            end
+    table.insert(err, "\n")
 
+    for l in trace:gmatch("(.-)\n") do
+        if not l:match("boot.lua") then
+            l = l:gsub("stack traceback:", "Traceback\n")
             table.insert(err, l)
-
-            if firstLine then
-                table.insert(err, "-----------\n")
-            end
         end
     end
 
     local p = table.concat(err, "\n")
 
-    p = string.gsub(p, "\t", "")
-    p = string.gsub(p, "%[string \"(.-)\"%]", "%1")
+    p = p:gsub("\t", "")
+    p = p:gsub("%[string \"(.-)\"%]", "%1")
+
+    local max_text_width = love.graphics.getWidth() - love.window.toPixels(CONFIG.debug.error.position.x)
+    local _, lines = font:getWrap(p, max_text_width)
+    local max_translate_y = (#lines + 8) * font:getHeight()
+    local translate_y = 0
+    local translate_vy = 0
+    local translate_ay = 0
 
     local function draw()
         local x, y = love.window.toPixels(CONFIG.debug.error.position.x), love.window.toPixels(CONFIG.debug.error.position.y)
-        love.graphics.clear(love.graphics.getBackgroundColor())
+        love.graphics.clear(CONFIG.debug.error.background)
         local sx, sy = CONFIG.debug.error.shadowOffset.x, CONFIG.debug.error.shadowOffset.y
         love.graphics.setColor(CONFIG.debug.error.shadow)
         love.graphics.printf(p, x + sx, y + sy, love.graphics.getWidth() - x)
         love.graphics.setColor(CONFIG.debug.error.foreground)
         love.graphics.printf(p, x, y, love.graphics.getWidth() - x)
+
+        if math.abs(translate_vy) > 4 then
+            love.graphics.push()
+            love.graphics.translate(0, -translate_y)
+            local bar_width = 8
+            local bar_height = love.graphics.getHeight()^2 / max_translate_y
+            print(bar_height)
+            local bar_y = -translate_y / max_translate_y * love.graphics.getHeight()
+            love.graphics.setColor(1, 1, 1, 0.5)
+            love.graphics.rectangle('fill', love.graphics.getWidth() - bar_width - 1, bar_y, bar_width, bar_height, 2, 2)
+            love.graphics.pop()
+        else
+            love.graphics.push()
+            love.graphics.translate(0, -translate_y)
+            local bar_width = 8
+            local bar_height = love.graphics.getHeight()^2 / max_translate_y
+            print(bar_height)
+            local bar_y = -translate_y / max_translate_y * love.graphics.getHeight()
+            love.graphics.setColor(1, 1, 1, Lume.clamp(math.abs(translate_vy)/4, 0, 0.5))
+            love.graphics.rectangle('fill', love.graphics.getWidth() - bar_width - 1, bar_y, bar_width, bar_height, 2, 2)
+            love.graphics.pop()
+        end
+
         love.graphics.present()
     end
 
@@ -190,14 +220,14 @@ function love.errhand(msg)
         p = p .. "\n\nPress Ctrl+C or tap to copy this error"
     end
 
-    while true do
+    return function()
         love.event.pump()
 
         for e, a, b, c in love.event.poll() do
             if e == "quit" then
-                return
+                return 1
             elseif e == "keypressed" and a == "escape" then
-                return
+                return 1
             elseif e == "keypressed" and a == "c" and love.keyboard.isDown("lctrl", "rctrl") then
                 copyToClipboard()
             elseif e == "touchpressed" then
@@ -209,18 +239,36 @@ function love.errhand(msg)
                 end
                 local pressed = love.window.showMessageBox("Quit "..name.."?", "", buttons)
                 if pressed == 1 then
-                    return
+                    return 1
                 elseif pressed == 3 then
                     copyToClipboard()
                 end
+            elseif e == "wheelmoved" then
+                translate_ay = b * 2000 * math.sqrt((1+ math.abs(translate_vy)))
             end
         end
 
+        if max_translate_y > love.graphics.getHeight() then
+            local dt = 0.016
+            translate_vy = translate_vy + translate_ay * dt
+            translate_vy = translate_vy * 0.9
+            translate_y = translate_y + translate_vy * dt
+            if translate_y > 0 then
+                translate_y = 0
+            end
+            local max_scroll_y = -max_translate_y + love.graphics.getHeight()
+            if translate_y < max_scroll_y then
+                translate_y = max_scroll_y
+            end
+            translate_ay = 0
+        end
+
+        love.graphics.translate(0, translate_y)
         draw()
+        love.graphics.origin()
 
         if love.timer then
-            love.timer.sleep(0.1)
+            love.timer.sleep(0.016)
         end
     end
-
 end
