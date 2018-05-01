@@ -75,7 +75,7 @@ function GS.current()
 end
 
 -- fetch event callbacks from love.handlers
-local all_callbacks = { 'draw', 'errhand', 'update' }
+local all_callbacks = { 'draw', 'errhandler', 'update' }
 for k in pairs(love.handlers) do
     all_callbacks[#all_callbacks+1] = k
 end
