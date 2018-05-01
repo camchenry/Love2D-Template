@@ -21,14 +21,11 @@ function love.load()
         local loadTimeEnd = love.timer.getTime()
         local loadTime = (loadTimeEnd - loadTimeStart)
         print(("Loaded game in %.3f seconds."):format(loadTime))
-        Lovebird.print(("Loaded game in %.3f seconds."):format(loadTime))
     end
 end
 
 function love.update(dt)
-    if DEBUG and Lovebird then
-        Lovebird.update()
-    end
+
 end
 
 function love.draw()

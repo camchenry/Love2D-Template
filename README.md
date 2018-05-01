@@ -65,4 +65,3 @@ There are a few guidelines that I follow to keep projects consistent and maintai
     * [Timer](http://hump.readthedocs.io/en/latest/timer.html) - Allows you to create code that will run after N seconds, every N seconds, and during N seconds, and other useful timing utilities.
     * [Vector](http://hump.readthedocs.io/en/latest/vector.html) - Represents a 2D vector with a full set of the needed functions (normalization, dot product, cross product, etc.).
 * [Lume](https://github.com/rxi/lume) - A set of utility functions that are incredibly useful for gamedev.
-* [Lovebird](https://github.com/rxi/lovebird) - An interactive web debug console that lets you evaluate expressions and view the current state of the program.

@@ -54,15 +54,6 @@ CONFIG = {
             shadowOffset    = {x = 1, y = 1},
             position        = {x = 70, y = 70},
         },
-
-        lovebird = {
-            port = 8000,
-            wrapPrint = true,
-            echoInput = true,
-            updateInterval = 0.2,
-            maxLines = 200,
-            openInBrowser = false,
-        }
     }
 }
 
@@ -109,16 +100,3 @@ States = {
     menu = require 'states.menu',
     game = require 'states.game',
 }
-
-if DEBUG then
-    Lovebird = require 'libs.lovebird'
-    Lovebird.port = CONFIG.debug.lovebird.port
-    Lovebird.wrapprint = CONFIG.debug.lovebird.wrapPrint
-    Lovebird.echoinput = CONFIG.debug.lovebird.echoInput
-    Lovebird.updateinterval = CONFIG.debug.lovebird.updateInterval
-    Lovebird.maxlines = CONFIG.debug.lovebird.maxLines
-    print('Running lovebird on localhost:' .. Lovebird.port)
-    if CONFIG.debug.lovebird.openInBrowser then
-        love.system.openURL("http://localhost:" .. Lovebird.port)
-    end
-end
